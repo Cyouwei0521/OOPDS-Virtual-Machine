@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Virtual Machine",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-std=c++11",
+                "TT7L_G01.cpp",
+                "-o",
+                "vm_runner"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"]
+        }
+    ]
+}

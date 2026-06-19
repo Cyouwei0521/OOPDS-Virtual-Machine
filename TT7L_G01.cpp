@@ -319,7 +319,199 @@ class DisplayInstruction : public Instruction {
     }
 };
 
+// Utility class for binary conversion and manual bitwise manipulation (No STL)
+class BitwiseUtils {
+public:
+    // 1. Converts a signed decimal char to an 8-bit binary array (Two's Complement)
+    static void decToBinary(signed char num, int bits[8]) {
+        unsigned char uNum = (unsigned char)num; 
+        for (int i = 7; i >= 0; i--) {
+            bits[i] = uNum % 2;
+            uNum /= 2;
+        }
+    }
 
+    // 2. Converts an 8-bit binary array back to a signed decimal char
+    static signed char binaryToDec(int bits[8]) {
+        unsigned char uNum = 0;
+        for (int i = 0; i < 8; i++) {
+            uNum = (uNum << 1) | bits[i];
+        }
+        return (signed char)uNum;
+    }
+};
+
+// SHL Instruction Class (Manual Shift Left implementation)
+class ShlInstruction : public Instruction {
+private:
+    int regIndex;      // The register to shift (e.g., R1)
+    int shiftAmount;   // How many positions to shift left
+
+public:
+    // Constructor: e.g., SHL R1, 2
+    ShlInstruction(int reg, int amount) : regIndex(reg), shiftAmount(amount) {}
+
+    void execute(CPU* cpu) override {
+        // 1. Get current value from the register
+        signed char val = cpu->getRegister(regIndex).getValue();
+        int bits[8];
+
+        // 2. Convert decimal to binary array manually
+        BitwiseUtils::decToBinary(val, bits);
+
+        // 3. Perform manual Shift Left (SHL)
+        for (int step = 0; step < shiftAmount; step++) {
+            // Shift elements to the left
+            for (int i = 0; i < 7; i++) {
+                bits[i] = bits[i + 1];
+            }
+            // Pad the rightmost bit with 0
+            bits[7] = 0;
+        }
+
+        // 4. Convert the shifted binary array back to decimal
+        signed char result = BitwiseUtils::binaryToDec(bits);
+
+        // 5. Update flags based on the result
+        FlagRegister& f = cpu->getFlags();
+        f.setZF(result == 0); 
+
+        // 6. Store the result back to the register and move to next instruction
+        cpu->getRegister(regIndex).setValue(result);
+        cpu->incrementPC();
+    }
+};
+
+// SHR Instruction Class (Manual Shift Right implementation)
+class ShrInstruction : public Instruction {
+private:
+    int regIndex;      // The register to shift (e.g., R1)
+    int shiftAmount;   // How many positions to shift right
+
+public:
+    // Constructor: e.g., SHR R1, 2
+    ShrInstruction(int reg, int amount) : regIndex(reg), shiftAmount(amount) {}
+
+    void execute(CPU* cpu) override {
+        // 1. Get current value from the register
+        signed char val = cpu->getRegister(regIndex).getValue();
+        int bits[8];
+
+        // 2. Convert decimal to binary array manually
+        BitwiseUtils::decToBinary(val, bits);
+
+        // 3. Perform manual Shift Right (SHR)
+        for (int step = 0; step < shiftAmount; step++) {
+            // Shift elements to the right (starting from the end)
+            for (int i = 7; i > 0; i--) {
+                bits[i] = bits[i - 1];
+            }
+            // Pad the leftmost bit with 0
+            bits[0] = 0;
+        }
+
+        // 4. Convert the shifted binary array back to decimal
+        signed char result = BitwiseUtils::binaryToDec(bits);
+
+        // 5. Update flags based on the result
+        FlagRegister& f = cpu->getFlags();
+        f.setZF(result == 0); 
+
+        // 6. Store the result back to the register and move to next instruction
+        cpu->getRegister(regIndex).setValue(result);
+        cpu->incrementPC();
+    }
+};
+
+// ROL Instruction Class (Manual Rotate Left implementation)
+class RolInstruction : public Instruction {
+private:
+    int regIndex;      // The register to rotate (e.g., R1)
+    int rotateAmount;  // How many positions to rotate left
+
+public:
+    // Constructor: e.g., ROL R1, 2
+    RolInstruction(int reg, int amount) : regIndex(reg), rotateAmount(amount) {}
+
+    void execute(CPU* cpu) override {
+        // 1. Get current value from the register
+        signed char val = cpu->getRegister(regIndex).getValue();
+        int bits[8];
+
+        // 2. Convert decimal to binary array manually
+        BitwiseUtils::decToBinary(val, bits);
+
+        // 3. Perform manual Rotate Left (ROL)
+        for (int step = 0; step < rotateAmount; step++) {
+            // Save the leftmost bit before it falls off
+            int leftmostBit = bits[0];
+            
+            // Shift elements to the left
+            for (int i = 0; i < 7; i++) {
+                bits[i] = bits[i + 1];
+            }
+            
+            // Place the saved leftmost bit into the rightmost position
+            bits[7] = leftmostBit;
+        }
+
+        // 4. Convert the rotated binary array back to decimal
+        signed char result = BitwiseUtils::binaryToDec(bits);
+
+        // 5. Update flags based on the result
+        FlagRegister& f = cpu->getFlags();
+        f.setZF(result == 0); 
+
+        // 6. Store the result back to the register and move to next instruction
+        cpu->getRegister(regIndex).setValue(result);
+        cpu->incrementPC();
+    }
+};
+
+// ROR Instruction Class (Manual Rotate Right implementation)
+class RorInstruction : public Instruction {
+private:
+    int regIndex;      // The register to rotate (e.g., R1)
+    int rotateAmount;  // How many positions to rotate right
+
+public:
+    // Constructor: e.g., ROR R1, 2
+    RorInstruction(int reg, int amount) : regIndex(reg), rotateAmount(amount) {}
+
+    void execute(CPU* cpu) override {
+        // 1. Get current value from the register
+        signed char val = cpu->getRegister(regIndex).getValue();
+        int bits[8];
+
+        // 2. Convert decimal to binary array manually
+        BitwiseUtils::decToBinary(val, bits);
+
+        // 3. Perform manual Rotate Right (ROR)
+        for (int step = 0; step < rotateAmount; step++) {
+            // Save the rightmost bit before it falls off
+            int rightmostBit = bits[7];
+            
+            // Shift elements to the right
+            for (int i = 7; i > 0; i--) {
+                bits[i] = bits[i - 1];
+            }
+            
+            // Place the saved rightmost bit into the leftmost position
+            bits[0] = rightmostBit;
+        }
+
+        // 4. Convert the rotated binary array back to decimal
+        signed char result = BitwiseUtils::binaryToDec(bits);
+
+        // 5. Update flags based on the result
+        FlagRegister& f = cpu->getFlags();
+        f.setZF(result == 0); 
+
+        // 6. Store the result back to the register and move to next instruction
+        cpu->getRegister(regIndex).setValue(result);
+        cpu->incrementPC();
+    }
+};
 
 int main() {
     cout << "--- Booting Virtual Machine ---" << endl;

@@ -1,7 +1,7 @@
 //group
 //Group Members;
 //1.Chong You Wei 242UC2431Z
-//2.
+//2.Tee Li Qing 261UC2606W
 //3.Tiang Li Yuan 252UC241LG
 //4.Chia Yee Shuen 252UC24306
 
@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstdlib>
 //strictly no STL
 
 using namespace std;
@@ -162,6 +163,212 @@ class CPU {
     CustomStack& getStack(){return stack;}
     int getPC(){return PC;}
     void incrementPC(){PC++;}
+};
+
+// arithmetic instructions
+// helper for updating flags and storing result
+class ArithmeticHelper {
+    private:
+    // keep the result within signed 8-bit range
+    static signed char normalizeToByte(int result){
+        // convert result into a value between 0 and 255
+        int value = result % 256;
+        if (value < 0){value += 256;}
+        // convert back to signed value if more than 127
+        if (value > 127){value -= 256;}
+        return (signed char)value;
+    }
+
+    public:
+    // update all flags based on the result
+    static void updateFlags(CPU* cpu, int result){
+        FlagRegister& flags = cpu->getFlags();
+        // check overflow, underflow, carry and zero
+        flags.setOF(result > 127);
+        flags.setUF(result < -128);
+        flags.setCF(result > 127 || result < -128);
+        flags.setZF(result == 0);
+    }
+    // update flag and store the final result into register
+    static void storeArithmeticResult(CPU* cpu, int regIndex, int result){
+        updateFlags(cpu, result);
+        cpu->getRegister(regIndex).setValue(normalizeToByte(result));
+    }
+};
+
+// base class for arithmetic instructions with two registers
+class ArithmeticInstruction : public Instruction {
+    private:
+    int destRegIndex; // destination register
+    int srcRegIndex;  // source register
+
+    protected:
+    // get register indexes for child classes
+    int getDestRegIndex(){return destRegIndex;}
+    int getSrcRegIndex(){return srcRegIndex;}
+
+    public:
+    // constructor for instructions with two register operands
+    ArithmeticInstruction(int dest, int src){
+        destRegIndex = dest;
+        srcRegIndex = src;
+    }
+};
+
+// ADD Instruction Class
+class AddInstruction : public ArithmeticInstruction {
+    public:
+    // constructor, example ADD R1, R2
+    AddInstruction(int dest, int src) : ArithmeticInstruction(dest, src) {}
+
+    void execute(CPU* cpu) override {
+        // get destination and source register indexes
+        int dest = getDestRegIndex();
+        int src = getSrcRegIndex();
+
+        // add source register value to destination register value
+        int result = (int)cpu->getRegister(dest).getValue()
+                   + (int)cpu->getRegister(src).getValue();
+
+        // update flags, store result and move to next instruction
+        ArithmeticHelper::storeArithmeticResult(cpu, dest, result);
+        cpu->incrementPC();
+    }
+};
+
+// SUB Instruction Class
+class SubInstruction : public ArithmeticInstruction {
+    public:
+    // constructor, example SUB R1, R2
+    SubInstruction(int dest, int src) : ArithmeticInstruction(dest, src) {}
+
+    void execute(CPU* cpu) override {
+        // get the destination and source register indexes
+        int dest = getDestRegIndex();
+        int src = getSrcRegIndex();
+
+        // subtract source register value from destination register value
+        int result = (int)cpu->getRegister(dest).getValue()
+                   - (int)cpu->getRegister(src).getValue();
+
+        // update flags, store result and move to next instruction
+        ArithmeticHelper::storeArithmeticResult(cpu, dest, result);
+        cpu->incrementPC();
+    }
+};
+
+// MUL Instruction Class
+class MulInstruction : public ArithmeticInstruction {
+    public:
+    // constructor, example MUL R1, R2
+    MulInstruction(int dest, int src) : ArithmeticInstruction(dest, src) {}
+
+    void execute(CPU* cpu) override {
+        // get the destination and source register indexes
+        int dest = getDestRegIndex();
+        int src = getSrcRegIndex();
+
+        // multiply destination register value by source register value
+        int result = (int)cpu->getRegister(dest).getValue()
+                   * (int)cpu->getRegister(src).getValue();
+
+        // update flags, store result and move to next instruction
+        ArithmeticHelper::storeArithmeticResult(cpu, dest, result);
+        cpu->incrementPC();
+    }
+};
+
+// DIV Instruction Class
+class DivInstruction : public ArithmeticInstruction {
+    public:
+    // constructor, example DIV R1, R2
+    DivInstruction(int dest, int src) : ArithmeticInstruction(dest, src) {}
+
+    void execute(CPU* cpu) override {
+        // get the destination and source register indexes
+        int dest = getDestRegIndex();
+        int src = getSrcRegIndex();
+
+        // get divisor from the source register
+        int divisor = (int)cpu->getRegister(src).getValue();
+
+        // display error and stop if divisor is zero
+        if (divisor == 0){
+            cout << "Error: Division by zero" << endl;
+            exit(1);
+        }
+
+        // divide destination register value by source register value
+        int result = (int)cpu->getRegister(dest).getValue() / divisor;
+
+        // update flags, store result and move to next instruction
+        ArithmeticHelper::storeArithmeticResult(cpu, dest, result);
+        cpu->incrementPC();
+    }
+};
+
+// INC Instruction Class
+class IncInstruction : public Instruction {
+    private:
+    int destRegIndex; // register to increase
+
+    public:
+    // constructor, example INC R1
+    IncInstruction(int dest){destRegIndex = dest;}
+
+    void execute(CPU* cpu) override {
+        // add 1 to the destination register value
+        int result = (int)cpu->getRegister(destRegIndex).getValue() + 1;
+
+        // update flags, store result and move to next instruction
+        ArithmeticHelper::storeArithmeticResult(cpu, destRegIndex, result);
+        cpu->incrementPC();
+    }
+};
+
+// DEC Instruction Class
+class DecInstruction : public Instruction {
+    private:
+    int destRegIndex; // register to decrease
+
+    public:
+    // constructor, example DEC R1
+    DecInstruction(int dest){destRegIndex = dest;}
+
+    void execute(CPU* cpu) override {
+        // subtract 1 from the destination register value
+        int result = (int)cpu->getRegister(destRegIndex).getValue() - 1;
+
+        // update flags, store result and move to next instruction
+        ArithmeticHelper::storeArithmeticResult(cpu, destRegIndex, result);
+        cpu->incrementPC();
+    }
+};
+
+// RESET Instruction Class
+class ResetInstruction : public Instruction {
+    private:
+    string targetFlag; // flag selected by the user
+
+    public:
+    // constructor, example RESET OF
+    ResetInstruction(string flagName){targetFlag = flagName;}
+
+    void execute(CPU* cpu) override {
+        // find and reset the selected flag
+        if (targetFlag == "OF"){cpu->getFlags().setOF(false);}
+        else if (targetFlag == "UF"){cpu->getFlags().setUF(false);}
+        else if (targetFlag == "CF"){cpu->getFlags().setCF(false);}
+        else if (targetFlag == "ZF"){cpu->getFlags().setZF(false);}
+        else {
+            // display error if the flag name is invalid
+            cout << "Error: Invalid flag name " << targetFlag << endl;
+            exit(1);
+        }
+
+        // move to next instruction
+        cpu->incrementPC();
+    }
 };
 
 enum class MovMode{IMMEDIATE, REGISTER, INDIRECT};

@@ -1,22 +1,39 @@
-; ===================================================
-; Program 1: Summing 5 values
-; Description: Reads 5 inputs from user and sums them up
-; ===================================================
+; =============================
+; Program 1: Summing 5 values 
+; =============================
 
-INPUT R1      ; Read 1st number into R1
-MOV R0, R1    ; Copy 1st number to R0 (R0 will store the running total)
+; --- 1. Get 5 inputs and push them to Stack ---
+INPUT R1
+PUSH R1
+INPUT R1
+PUSH R1
+INPUT R1
+PUSH R1
+INPUT R1
+PUSH R1
+INPUT R1
+PUSH R1
 
-INPUT R2      ; Read 2nd number into R2
-ADD R0, R2    ; R0 = R0 + R2
+; --- 2. Pop and Sum them up ---
+MOV R0, 0       ; Initialize sum = 0
 
-INPUT R3      ; Read 3rd number into R3
-ADD R0, R3    ; R0 = R0 + R3
+POP R2          ; Get 5th number
+ADD R0, R2
 
-INPUT R4      ; Read 4th number into R4
-ADD R0, R4    ; R0 = R0 + R4
+POP R2          ; Get 4th number
+ADD R0, R2
 
-INPUT R5      ; Read 5th number into R5 
-ADD R0, R5    ; R0 = R0 + R5
+POP R2          ; Get 3rd number
+ADD R0, R2
 
-DISPLAY R0    ; Display the final total sum to screen
+POP R2          ; Get 2nd number
+ADD R0, R2
 
+POP R2          ; Get 1st number
+ADD R0, R2      ; R0 now holds the total sum
+
+; --- 3. Test INC and DEC just to cover opcodes ---
+INC R0          ; sum = sum + 1
+DEC R0          ; sum = sum - 1 (back to original sum)
+
+DISPLAY R0      ; Display the final sum

@@ -1,22 +1,29 @@
-; ===================================================
-; Program 3: Factorial of 4
-; Description: Calculates 4! (4 * 3 * 2 * 1) and displays 24
-; ===================================================
+; ===========================
+; Program 3: Factorial of 4 
+; ===========================
 
-MOV R1, 1     ; R1 will hold the running product (initial value = 1)
-MOV R2, 4     ; R2 is counter/multiplier starting at 4
+MOV R1, 1       ; Product accumulator
+MOV R2, 4       ; Counter
 
-; --- Loop Start ---
-MUL R1, R2    ; R1 = R1 * R2 (First iteration: 1 * 4 = 4)
-SUB R2, 1     ; Decrement multiplier by 1 (R2 becomes 3)
+; --- Factorial Loop via manual unrolling ---
+MUL R1, R2      ; 1 * 4 = 4
+SUB R2, 1       ; 3
 
-MUL R1, R2    ; R1 = R1 * R2 (Second iteration: 4 * 3 = 12)
-SUB R2, 1     ; Decrement multiplier by 1 (R2 becomes 2)
+MUL R1, R2      ; 4 * 3 = 12
+SUB R2, 1       ; 2
 
-MUL R1, R2    ; R1 = R1 * R2 (Third iteration: 12 * 2 = 24)
-SUB R2, 1     ; Decrement multiplier by 1 (R2 becomes 1)
+MUL R1, R2      ; 12 * 2 = 24
+SUB R2, 1       ; 1
 
-MUL R1, R2    ; R1 = R1 * R2 (Fourth iteration: 24 * 1 = 24)
-SUB R2, 1     ; Decrement multiplier by 1 (R2 becomes 0, loop finished)
+MUL R1, R2      ; 24 * 1 = 24
+SUB R2, 1       ; 0 (R1 now holds 24)
 
-DISPLAY R1    ; Display the final result (24)
+; --- Test DIV and RESET ---
+MOV R3, 2
+DIV R1, R3      ; 24 / 2 = 12 (Testing DIV opcode)
+MOV R4, 2
+MUL R1, R4      ; 12 * 2 = 24 (Back to 24)
+
+RESET           ; Reset all system flags to clear any OF/ZF/CF/UF
+
+DISPLAY R1      ; Display 24

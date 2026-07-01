@@ -717,7 +717,7 @@ class ShrInstruction : public ShiftInstruction {
  * Coordinates everything: reads the .asm file, decodes each line into an
  * Instruction object, executes the program via the CPU, then dumps the
  * final state to the screen and to a file.
- * Author: <FILL IN>
+ * Author: Chia Yee Shuen 252UC24306 & Tiang Li Yuan 252UC241LG
  * ========================================================================== */
 class Runner {
     private:

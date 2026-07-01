@@ -24,6 +24,9 @@ DIV R1, R3      ; 24 / 2 = 12 (Testing DIV opcode)
 MOV R4, 2
 MUL R1, R4      ; 12 * 2 = 24 (Back to 24)
 
-RESET           ; Reset all system flags to clear any OF/ZF/CF/UF
+RESET OF          ; Reset system flags to clear OF
+RESET UF          ; Reset system flags to clear UF
+RESET CF          ; Reset system flags to clear CF
+RESET ZF          ; Reset system flags to clear ZF
 
 DISPLAY R1      ; Display 24
